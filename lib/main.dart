@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:draw_graph/body.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:draw_graph/qrcode_scan.dart';
 
 void main() {
   runApp(const App());
@@ -38,6 +39,11 @@ class AppView extends StatelessWidget {
               const PopupMenuItem(
                 value: 1,
                 child: Text('Export'),
+              ),
+              const PopupMenuDivider(),
+              const PopupMenuItem(
+                value: 2,
+                child: Text('Import'),
               )
             ],
             shape:
@@ -102,6 +108,13 @@ class AppView extends StatelessWidget {
                           ],
                         );
                       });
+                  break;
+                case 2:
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const QRcodeScannerWithController(),
+                    ),
+                  );
                   break;
               }
             },
