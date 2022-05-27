@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:draw_graph/body.dart';
+import 'package:draw_graph/paint.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:draw_graph/qrcode_scan.dart';
 
@@ -52,69 +54,13 @@ class AppView extends StatelessWidget {
             onSelected: (val) {
               switch (val) {
                 case 0:
-                  showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text('Clear the Graph'),
-                          content: const Text(
-                              'Once cleared, it cannot be restored.'),
-                          actions: [
-                            TextButton(
-                                onPressed: () =>
-                                    Navigator.of(context).pop(true),
-                                child: const Text(
-                                  'Clear',
-                                  style: TextStyle(color: Colors.red),
-                                )),
-                            TextButton(
-                                onPressed: () =>
-                                    Navigator.of(context).pop(false),
-                                child: const Text('Cancel'))
-                          ],
-                        );
-                      }).then((value) {
-                    if (value) {
-                      body.clear();
-                    }
-                  });
+                  clear(context, body);
                   break;
                 case 1:
-                  showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text('Export Graph'),
-                          content: SizedBox(
-                            height: 250,
-                            width: 300,
-                            child: QrImage(
-                              data: body.export(),
-                              size: 300,
-                              version: QrVersions.auto,
-                              embeddedImage:
-                                  const AssetImage('assets/icon.png'),
-                              embeddedImageStyle: QrEmbeddedImageStyle(
-                                  size: const Size(50, 50)),
-                              errorStateBuilder: (cxt, err) {
-                                return const Text('QR code error');
-                              },
-                            ),
-                          ),
-                          actions: [
-                            TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text('Ok'))
-                          ],
-                        );
-                      });
+                  export(context, body);
                   break;
                 case 2:
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const QRcodeScannerWithController(),
-                    ),
-                  );
+                  import(context, body);
                   break;
               }
             },
@@ -124,4 +70,108 @@ class AppView extends StatelessWidget {
       body: Center(child: body),
     );
   }
+
+  void clear(context, body) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Clear the Graph'),
+            content: const Text('Once cleared, it cannot be restored.'),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text(
+                    'Clear',
+                    style: TextStyle(color: Colors.red),
+                  )),
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Cancel'))
+            ],
+          );
+        }).then((value) {
+      if (value) {
+        body.clear();
+      }
+    });
+  }
+
+  void export(context, body) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Export Graph'),
+            content: SizedBox(
+              height: 250,
+              width: 300,
+              child: QrImage(
+                data: body.export(),
+                size: 300,
+                version: QrVersions.auto,
+                embeddedImage: const AssetImage('assets/icon.png'),
+                embeddedImageStyle:
+                    QrEmbeddedImageStyle(size: const Size(50, 50)),
+                errorStateBuilder: (cxt, err) {
+                  return const Text('QR code error');
+                },
+              ),
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Ok'))
+            ],
+          );
+        });
+  }
+
+  void import(context, body) {
+    Navigator.of(context)
+        .push(
+      MaterialPageRoute(
+        builder: (context) => const QRcodeScannerWithController(),
+      ),
+    )
+        .then((value) {
+      try {
+        Map scanData = jsonDecode(value);
+        if (scanData['graph'] == 'drawGraph') {
+          if (scanData['data'].runtimeType == List) {
+            List drawListData = scanData['data'];
+            List<Draw> drawList = [];
+            for (var element in drawListData) {
+              switch (element['type']) {
+                case 'line':
+                  Map data = element['data'];
+                  drawList.add(Draw(type: DrawType.line)
+                    ..line = Line(
+                        data['x1'], data['y1'], data['x2'], data['y2'],
+                        lineType: data['type']));
+                  break;
+                case 'arc':
+                  Map data = element['data'];
+                  drawList.add(Draw(type: DrawType.arc)
+                    ..arc = Arc(data['x1'], data['y1'], data['x2'], data['y2'],
+                        data['angle1'], data['angle2']));
+                  break;
+              }
+            }
+          } else {
+            importFailed(context);
+          }
+        } else {
+          importFailed(context);
+        }
+      } catch (error) {
+        importFailed(context);
+      }
+    });
+  }
+
+  void importFailed(context) =>
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Import failed. Please check if this QR code is provided by this APP.')));
 }
