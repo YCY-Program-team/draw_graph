@@ -10,12 +10,16 @@ class GraphCanva extends StatefulWidget {
 
   const GraphCanva(this._key) : super(key: _key);
 
-  clear() {
+  void clear() {
     _key.currentState?.clearList();
   }
 
-  String export() {
+  String exportData() {
     return _key.currentState!.exportGraph();
+  }
+
+  void importData(List<Draw> importDrawList) {
+    _key.currentState!.importGraph(importDrawList);
   }
 
   @override
@@ -811,5 +815,11 @@ class GraphCanvaState extends State<GraphCanva> {
     }
     exportData = {'graph': 'drawGraph', 'data': darwListData};
     return jsonEncode(exportData);
+  }
+
+  void importGraph(List<Draw> importDrawList) {
+    setState(() {
+      drawList = importDrawList;
+    });
   }
 }

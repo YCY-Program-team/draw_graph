@@ -71,7 +71,7 @@ class AppView extends StatelessWidget {
     );
   }
 
-  void clear(context, body) {
+  void clear(context, GraphCanva body) {
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -97,7 +97,7 @@ class AppView extends StatelessWidget {
     });
   }
 
-  void export(context, body) {
+  void export(context, GraphCanva body) {
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -107,12 +107,12 @@ class AppView extends StatelessWidget {
               height: 250,
               width: 300,
               child: QrImage(
-                data: body.export(),
+                data: body.exportData(),
                 size: 300,
                 version: QrVersions.auto,
                 embeddedImage: const AssetImage('assets/icon.png'),
                 embeddedImageStyle:
-                    QrEmbeddedImageStyle(size: const Size(50, 50)),
+                    QrEmbeddedImageStyle(size: const Size(40, 40)),
                 errorStateBuilder: (cxt, err) {
                   return const Text('QR code error');
                 },
@@ -127,7 +127,7 @@ class AppView extends StatelessWidget {
         });
   }
 
-  void import(context, body) {
+  void import(context, GraphCanva body) {
     Navigator.of(context)
         .push(
       MaterialPageRoute(
@@ -158,6 +158,9 @@ class AppView extends StatelessWidget {
                   break;
               }
             }
+            body.importData(drawList);
+            ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Import successful!')));
           } else {
             importFailed(context);
           }
