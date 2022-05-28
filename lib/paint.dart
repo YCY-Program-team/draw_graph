@@ -124,7 +124,8 @@ class Line {
     switch (lineType) {
       case 0:
         coordinate = {'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2};
-        if (((y1 - y2) / (x1 - x2) * (-1 - x2) + y2).abs() <= 1) {
+        if (((y1 - y2) / (x1 - x2) * (((x1 < x2) ? -1 : 1) - x2) + y2).abs() <=
+            1) {
           if (x1 < x2) {
             coordinate['x1'] = -1;
             coordinate['y1'] = (y1 - y2) / (x1 - x2) * (-1 - x2) + y2;
@@ -137,11 +138,12 @@ class Line {
             coordinate['x1'] = (x1 - x2) / (y1 - y2) * (-1 - y2) + x2;
             coordinate['y1'] = -1;
           } else {
-            coordinate['x1'] = (x1 - x2) / (y1 - y2) * (1 - y2) + x2;
+            coordinate['x1'] = (x2 - x1) / (y2 - y1) * (1 - y1) + x2;
             coordinate['y1'] = 1;
           }
         }
-        if (((y2 - y1) / (x2 - x1) * (1 - x1) - y1).abs() <= 1) {
+        if (((y2 - y1) / (x2 - x1) * (((x1 < x2) ? 1 : -1) - x1) + y1).abs() <=
+            1) {
           if (x1 < x2) {
             coordinate['x2'] = 1;
             coordinate['y2'] = (y2 - y1) / (x2 - x1) * (1 - x1) + y1;
@@ -160,7 +162,8 @@ class Line {
         }
         break;
       case 1:
-        if (((y2 - y1) / (x2 - x1) * (1 - x1) - y1).abs() <= 1) {
+        if (((y2 - y1) / (x2 - x1) * (((x1 < x2) ? 1 : -1) - x1) + y1).abs() <=
+            1) {
           if (x1 < x2) {
             coordinate['x2'] = 1;
             coordinate['y2'] = (y2 - y1) / (x2 - x1) * (1 - x1) + y1;

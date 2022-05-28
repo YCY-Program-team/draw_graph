@@ -1,0 +1,68 @@
+diff a/lib/main.dart b/lib/main.dart	(rejected hunks)
+@@ -137,44 +137,32 @@
+         .then((value) {
+       try {
+         Map scanData = jsonDecode(value);
+-        if (scanData['graph'] == 'drawGraph') {
+-          if (scanData['data'].runtimeType == List) {
+-            List drawListData = scanData['data'];
+-            List<Draw> drawList = [];
+-            for (var element in drawListData) {
+-              switch (element['type']) {
+-                case 'line':
+-                  Map data = element['data'];
+-                  drawList.add(Draw(type: DrawType.line)
+-                    ..line = Line(
+-                        data['x1'], data['y1'], data['x2'], data['y2'],
+-                        lineType: data['type']));
+-                  break;
+-                case 'arc':
+-                  Map data = element['data'];
+-                  drawList.add(Draw(type: DrawType.arc)
+-                    ..arc = Arc(data['x1'], data['y1'], data['x2'], data['y2'],
+-                        data['angle1'], data['angle2']));
+-                  break;
+-              }
+-            }
+-            body.importData(drawList);
+-            ScaffoldMessenger.of(context).showSnackBar(
+-                const SnackBar(content: Text('Import successful!')));
+-          } else {
+-            importFailed(context);
++        List drawListData = scanData['data'];
++        List<Draw> drawList = [];
++        for (var element in drawListData) {
++          switch (element['type']) {
++            case 'line':
++              Map data = element['data'];
++              drawList.add(Draw(type: DrawType.line)
++                ..line = Line(data['x1'], data['y1'], data['x2'], data['y2'],
++                    lineType: data['type']));
++              break;
++            case 'arc':
++              Map data = element['data'];
++              drawList.add(Draw(type: DrawType.arc)
++                ..arc = Arc(data['x1'], data['y1'], data['x2'], data['y2'],
++                    data['angle1'], data['angle2']));
++              break;
+           }
+-        } else {
+-          importFailed(context);
+         }
++        body.importData(drawList);
++        ScaffoldMessenger.of(context)
++            .showSnackBar(const SnackBar(content: Text('Import successful!')));
+       } catch (error) {
+-        importFailed(context);
++        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
++            content: Text(
++                'Import failed. Please check if this QR code is provided by this APP.')));
+       }
+     });
+   }
+-
+-  void importFailed(context) =>
+-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+-          content: Text(
+-              'Import failed. Please check if this QR code is provided by this APP.')));
+ }
