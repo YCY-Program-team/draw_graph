@@ -62,7 +62,7 @@ class GraphCanvaState extends State<GraphCanva> {
       String suffix = ''}) {
     return TextField(
       inputFormatters: textInputFormatter,
-      keyboardType: TextInputType.number,
+      keyboardType: const TextInputType.numberWithOptions(),
       style: const TextStyle(fontSize: 18),
       textAlign: TextAlign.center,
       decoration: InputDecoration(
