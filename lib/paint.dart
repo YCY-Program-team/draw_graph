@@ -138,7 +138,7 @@ class Line {
             coordinate['x1'] = (x1 - x2) / (y1 - y2) * (-1 - y2) + x2;
             coordinate['y1'] = -1;
           } else {
-            coordinate['x1'] = (x2 - x1) / (y2 - y1) * (1 - y1) + x2;
+            coordinate['x1'] = (x1 - x2) / (y1 - y2) * (1 - y2) + x2;
             coordinate['y1'] = 1;
           }
         }
