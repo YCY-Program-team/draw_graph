@@ -98,70 +98,103 @@ class AppView extends StatelessWidget {
   }
 
   void export(context, GraphCanva body) {
-    showDialog(
+    showModalBottomSheet(
         context: context,
         builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Export Graph'),
-            content: SizedBox(
-              height: 250,
-              width: 300,
-              child: QrImage(
-                data: body.exportData(),
-                size: 300,
-                version: QrVersions.auto,
-                embeddedImage: const AssetImage('assets/icon.png'),
-                embeddedImageStyle:
-                    QrEmbeddedImageStyle(size: const Size(40, 40)),
-                errorStateBuilder: (cxt, err) {
-                  return const Text('QR code error');
-                },
-              ),
-            ),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Ok'))
-            ],
-          );
+          return Container(
+              height: 500,
+              color: Colors.yellow[100],
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+              child: Column(
+                children: <Widget>[
+                  Expanded(
+                    child: QrImage(
+                      data: body.exportData(),
+                      version: QrVersions.auto,
+                      embeddedImage: const AssetImage('assets/icon.png'),
+                      embeddedImageStyle:
+                          QrEmbeddedImageStyle(size: const Size(40, 40)),
+                      errorStateBuilder: (cxt, err) {
+                        return const Text('QR code error');
+                      },
+                    ),
+                  ),
+                  ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Close'))
+                ],
+              ));
         });
   }
 
+  Future importCheck(context, GraphCanva body) async {
+    if (body.drawList().isNotEmpty) {
+      return await showDialog<bool>(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Import Graph'),
+              content: const Text(
+                  'After importing, all current graph will be cleared.'),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text(
+                      'Import and Clear',
+                      style: TextStyle(color: Colors.red),
+                    )),
+                TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Cancel'))
+              ],
+            );
+          });
+    } else {
+      return true;
+    }
+  }
+
   void import(context, GraphCanva body) {
-    Navigator.of(context)
-        .push(
-      MaterialPageRoute(
-        builder: (context) => const QRcodeScannerWithController(),
-      ),
-    )
-        .then((value) {
-      try {
-        Map scanData = jsonDecode(value);
-        List drawListData = scanData['data'];
-        List<Draw> drawList = [];
-        for (var element in drawListData) {
-          switch (element['type']) {
-            case 'line':
-              Map data = element['data'];
-              drawList.add(Draw(type: DrawType.line)
-                ..line = Line(data['x1'], data['y1'], data['x2'], data['y2'],
-                    lineType: data['type']));
-              break;
-            case 'arc':
-              Map data = element['data'];
-              drawList.add(Draw(type: DrawType.arc)
-                ..arc = Arc(data['x1'], data['y1'], data['x2'], data['y2'],
-                    data['angle1'], data['angle2']));
-              break;
+    importCheck(context, body).then((value) {
+      if (value == true) {
+        Navigator.of(context)
+            .push(
+          MaterialPageRoute(
+            builder: (context) => const QRcodeScannerWithController(),
+          ),
+        )
+            .then((value) {
+          try {
+            Map scanData = jsonDecode(value);
+            List drawListData = scanData['data'];
+            List<Draw> drawList = [];
+            for (var element in drawListData) {
+              switch (element['type']) {
+                case 'line':
+                  Map data = element['data'];
+                  drawList.add(Draw(type: DrawType.line)
+                    ..line = Line(
+                        data['x1'], data['y1'], data['x2'], data['y2'],
+                        lineType: data['type']));
+                  break;
+                case 'arc':
+                  Map data = element['data'];
+                  drawList.add(Draw(type: DrawType.arc)
+                    ..arc = Arc(data['x1'], data['y1'], data['x2'], data['y2'],
+                        data['angle1'], data['angle2']));
+                  break;
+              }
+            }
+            body.importData(drawList);
+            ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Import successful!')));
+          } catch (error) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text(
+                    'Import failed. Please check if this QR code is provided by this APP.')));
           }
-        }
-        body.importData(drawList);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Import successful!')));
-      } catch (error) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text(
-                'Import failed. Please check if this QR code is provided by this APP.')));
+        });
       }
     });
   }

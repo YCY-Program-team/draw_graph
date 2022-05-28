@@ -22,6 +22,8 @@ class GraphCanva extends StatefulWidget {
     _key.currentState!.importGraph(importDrawList);
   }
 
+  List<Draw> drawList() => _key.currentState!.drawList;
+
   @override
   State<GraphCanva> createState() => GraphCanvaState();
 }
