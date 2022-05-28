@@ -36,6 +36,9 @@ class GraphCanvaState extends State<GraphCanva> {
   DrawType drawMenuChoose = DrawType.line;
   DoType doMenuChoose = DoType.canva;
 
+  double dragX = 0.0;
+  double dragY = 0.0;
+
   //line
   TextEditingController lineControllerX1 = TextEditingController();
   TextEditingController lineControllerY1 = TextEditingController();
@@ -544,6 +547,30 @@ class GraphCanvaState extends State<GraphCanva> {
                           color: Color.fromARGB(200, 120, 120, 120)),
                     ))),
           ),
+          onPanDown: (DragDownDetails dragDownDetails) {
+            dragX = 0;
+            dragY = 0;
+          },
+          onPanUpdate: (DragUpdateDetails dragUpdateDetails) {
+            dragX += dragUpdateDetails.delta.dx;
+            dragY += dragUpdateDetails.delta.dy;
+          },
+          onPanEnd: (DragEndDetails dragEndDetails) {
+            double angle = atan2(dragX, -dragY) / pi * 180;
+            angle -= 90;
+            if (angle < 0) angle += 360;
+
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                action: SnackBarAction(
+                  label: 'Done',
+                  onPressed: () {},
+                ),
+                duration: const Duration(milliseconds: 1500),
+                content: Text(
+                  '${angle.toStringAsFixed(0)}°',
+                  style: const TextStyle(fontSize: 18),
+                )));
+          },
           onTapDown: (TapDownDetails tapDownDetails) {
             int cX = (tapDownDetails.localPosition.dx / pow(10, 3 - zoom) -
                     pow(10, zoom))

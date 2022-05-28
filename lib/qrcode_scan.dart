@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -132,37 +133,38 @@ class _QRcodeScannerWithControllerState
                         iconSize: 32.0,
                         onPressed: () => controller.switchCamera(),
                       ),
-                      IconButton(
-                        color: Colors.white,
-                        icon: const Icon(Icons.image),
-                        iconSize: 32.0,
-                        onPressed: () async {
-                          final ImagePicker picker = ImagePicker();
-                          // Pick an image
-                          final XFile? image = await picker.pickImage(
-                            source: ImageSource.gallery,
-                          );
-                          if (image != null) {
-                            if (await controller.analyzeImage(image.path)) {
-                              if (!mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('QR code found!'),
-                                  backgroundColor: Colors.green,
-                                ),
-                              );
-                            } else {
-                              if (!mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('No QR code found!'),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
+                      if (!kIsWeb)
+                        IconButton(
+                          color: Colors.white,
+                          icon: const Icon(Icons.image),
+                          iconSize: 32.0,
+                          onPressed: () async {
+                            final ImagePicker picker = ImagePicker();
+                            // Pick an image
+                            final XFile? image = await picker.pickImage(
+                              source: ImageSource.gallery,
+                            );
+                            if (image != null) {
+                              if (await controller.analyzeImage(image.path)) {
+                                if (!mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('QR code found!'),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              } else {
+                                if (!mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('No QR code found!'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
                             }
-                          }
-                        },
-                      ),
+                          },
+                        ),
                     ],
                   ),
                 ),
