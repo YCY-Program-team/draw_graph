@@ -141,11 +141,21 @@ class Line {
         break;
       case 1:
         if (((y2 - y1) / (x2 - x1) * (1 - x1) - y1).abs() <= 1) {
-          coordinate['x2'] = 1;
-          coordinate['y2'] = (y2 - y1) / (x2 - x1) * (1 - x1) + y1;
+          if (x1 < x2) {
+            coordinate['x2'] = 1;
+            coordinate['y2'] = (y2 - y1) / (x2 - x1) * (1 - x1) + y1;
+          } else {
+            coordinate['x2'] = -1;
+            coordinate['y2'] = (y2 - y1) / (x2 - x1) * (-1 - x1) + y1;
+          }
         } else {
-          coordinate['x2'] = (x2 - x1) / (y2 - y1) * (1 - y1) + x1;
-          coordinate['y2'] = 1;
+          if (y1 < y2) {
+            coordinate['x2'] = (x2 - x1) / (y2 - y1) * (1 - y1) + x1;
+            coordinate['y2'] = 1;
+          } else {
+            coordinate['x2'] = (x2 - x1) / (y2 - y1) * (-1 - y1) + x1;
+            coordinate['y2'] = -1;
+          }
         }
         break;
       case 2:
