@@ -1,11 +1,11 @@
 {
-    "name": "draw_graph",
-    "short_name": "draw_graph",
+    "name": "Draw Graph",
+    "short_name": "Draw Graph",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Draw math graph",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
