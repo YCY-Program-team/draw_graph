@@ -7,12 +7,29 @@ class Painter extends CustomPainter {
   List<Draw> drawList;
   int editIdx;
   Painter({required this.drawList, required this.editIdx}) {
+    //paint
     Paint paintLine = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.stroke
       ..strokeWidth = 10
       ..strokeCap = StrokeCap.round;
+    Paint paintArc = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 10
+      ..strokeCap = StrokeCap.round;
+    Paint paintPoint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 10
+      ..strokeCap = StrokeCap.round;
+    //paint editting
     Paint paintEditLine = Paint()
+      ..color = Colors.yellow
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 10
+      ..strokeCap = StrokeCap.round;
+    Paint paintEditArc = Paint()
       ..color = Colors.yellow
       ..style = PaintingStyle.stroke
       ..strokeWidth = 10
@@ -22,13 +39,9 @@ class Painter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 50
       ..strokeCap = StrokeCap.round;
-    Paint paintPoint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 50
-      ..strokeCap = StrokeCap.round;
-    Paint paintArc = Paint()
-      ..color = Colors.white
+    //paint compass
+    Paint paintCompass = Paint()
+      ..color = const Color.fromARGB(158, 12, 57, 255)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 10
       ..strokeCap = StrokeCap.round;
@@ -50,14 +63,30 @@ class Painter extends CustomPainter {
         }
       } else if (element.type == DrawType.arc) {
         Arc arc = element.arc;
-        funList.add((Canvas canvas, Size size) {});
+        if (i == editIdx) {
+          funList.add((Canvas canvas, Size size) {
+            canvas.drawCircle(Offset(arc.x, arc.y), arc.radius, paintCompass);
+          });
+        }
+        funList.add((Canvas canvas, Size size) {
+          canvas.drawArc(
+              Rect.fromCircle(center: Offset(arc.x, arc.y), radius: arc.radius),
+              arc.angleForArc1,
+              arc.angleForArc2,
+              false,
+              i == editIdx ? paintEditArc : paintArc);
+        });
+        funList.add((Canvas canvas, Size size) {
+          canvas.drawPoints(PointMode.points, [Offset(arc.x, arc.y)],
+              i == editIdx ? paintEditPoint : paintPoint);
+        });
       }
     }
   }
   void prepare(Canvas canvas, Size size) {
     Paint paint = Paint()
       ..strokeWidth = 10
-      ..color = Colors.black;
+      ..color = Colors.lightBlue;
     for (int x = 1; x < 20; x++) {
       canvas.drawLine(Offset(size.width * x / 20, size.height * 0),
           Offset(size.width * x / 20, size.height * 1), paint);
@@ -100,12 +129,12 @@ class Line {
 }
 
 class Arc {
-  double x1;
-  double y1;
+  double x;
+  double y;
   double radius;
   int angle1;
   int angle2;
-  Arc(this.x1, this.y1, this.radius, this.angle1, this.angle2);
+  Arc(this.x, this.y, this.radius, this.angle1, this.angle2);
 
   get angleForArc1 => (2 * pi) * angle1 / 360;
   get angleForArc2 => (2 * pi) * angle2 / 360;
