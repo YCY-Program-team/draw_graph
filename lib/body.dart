@@ -23,9 +23,9 @@ class GraphCanva extends StatefulWidget {
 
 enum DoType { canva, list }
 
-enum LinePoint { pn, p1, p2 }
+enum LinePoint { p1, p2, all }
 
-enum ArcPoint { pn, pC, pR, angle }
+enum ArcPoint { pC, pR, angle }
 
 enum ArcDir { clockwise, counterclockwise, undecided }
 
@@ -33,7 +33,7 @@ class GraphCanvaState extends State<GraphCanva> {
   List<Draw> drawList = [];
   int editIdx = -1;
   LinePoint editLinePoint = LinePoint.p1;
-  ArcPoint editArcPoint = ArcPoint.pn;
+  ArcPoint editArcPoint = ArcPoint.pC;
   int startingAngle = 0;
   ArcDir editArcDir = ArcDir.undecided;
 
@@ -65,17 +65,14 @@ class GraphCanvaState extends State<GraphCanva> {
               double y = dragDownDetails.localPosition.dy;
               if (drawList[editIdx].type == DrawType.line) {
                 Line line = drawList[editIdx].line;
-                final halfDis = sqrt(
-                        pow(line.x1 - line.x2, 2) + pow(line.y1 - line.y2, 2)) /
-                    2;
-                if ((line.x1 - x).abs() < halfDis &&
-                    (line.y1 - y).abs() < halfDis) {
+
+                if ((line.x1 - x).abs() < 100 && (line.y1 - y).abs() < 100) {
                   editLinePoint = LinePoint.p1;
-                } else if ((line.x2 - x).abs() < halfDis &&
-                    (line.y2 - y).abs() < halfDis) {
+                } else if ((line.x2 - x).abs() < 100 &&
+                    (line.y2 - y).abs() < 100) {
                   editLinePoint = LinePoint.p2;
                 } else {
-                  editLinePoint = LinePoint.pn;
+                  editLinePoint = LinePoint.all;
                 }
               } else if (drawList[editIdx].type == DrawType.arc) {
                 Arc arc = drawList[editIdx].arc;
@@ -102,6 +99,8 @@ class GraphCanvaState extends State<GraphCanva> {
             if (editIdx >= 0) {
               double x = dragUpdateDetails.localPosition.dx;
               double y = dragUpdateDetails.localPosition.dy;
+              double dx = dragUpdateDetails.delta.dx;
+              double dy = dragUpdateDetails.delta.dy;
               if (drawList[editIdx].type == DrawType.line) {
                 Line line = drawList[editIdx].line;
                 if (editLinePoint == LinePoint.p1) {
@@ -114,6 +113,16 @@ class GraphCanvaState extends State<GraphCanva> {
                     drawList[editIdx].line =
                         Line(line.x1, line.y1, limitLoc(x), limitLoc(y));
                   });
+                } else {
+                  if (checkLoc(line.x1 + dx) &&
+                      checkLoc(line.y1 + dy) &&
+                      checkLoc(line.x2 + dx) &&
+                      checkLoc(line.y2 + dy)) {
+                    setState(() {
+                      drawList[editIdx].line = Line(line.x1 + dx, line.y1 + dy,
+                          line.x2 + dx, line.y2 + dy);
+                    });
+                  }
                 }
               } else if (drawList[editIdx].type == DrawType.arc) {
                 Arc arc = drawList[editIdx].arc;
@@ -352,6 +361,8 @@ class GraphCanvaState extends State<GraphCanva> {
       return i;
     }
   }
+
+  bool checkLoc(double i) => i >= 0 && i <= 2000;
 
   ArcDir dragDir(double x, double y, double moveX, double moveY) {
     if (x != 0 && y != 0 && moveX != 0 && moveY != 0) {

@@ -202,9 +202,9 @@ class AppView extends StatelessWidget {
             ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Import successful!')));
           } catch (error) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                 content: Text(
-                    '$error Import failed. Please check if this QR code is provided by this APP.')));
+                    'Import failed. Please check if this QR code is provided by this APP.')));
           }
         });
       }
