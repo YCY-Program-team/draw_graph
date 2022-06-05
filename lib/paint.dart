@@ -21,7 +21,7 @@ class Painter extends CustomPainter {
     Paint paintPoint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 10
+      ..strokeWidth = 20
       ..strokeCap = StrokeCap.round;
     //paint editting
     Paint paintEditLine = Paint()
@@ -118,6 +118,13 @@ class Draw {
   late Arc arc;
   DrawType type;
   Draw({required this.type});
+  Draw copy() {
+    if (type == DrawType.line) {
+      return Draw(type: type)..line = line;
+    } else {
+      return Draw(type: type)..arc = arc;
+    }
+  }
 }
 
 class Line {
