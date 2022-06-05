@@ -6,7 +6,9 @@ class Painter extends CustomPainter {
   List funList = [];
   List<Draw> drawList;
   int editIdx;
-  Painter({required this.drawList, required this.editIdx}) {
+  bool showGrid;
+  Painter(
+      {required this.showGrid, required this.drawList, required this.editIdx}) {
     //paint
     Paint paintLine = Paint()
       ..color = Colors.white
@@ -99,7 +101,9 @@ class Painter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    prepare(canvas, size);
+    if (showGrid) {
+      prepare(canvas, size);
+    }
     for (var element in funList) {
       element(canvas, size);
     }

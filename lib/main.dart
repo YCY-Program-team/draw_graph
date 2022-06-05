@@ -33,13 +33,29 @@ class AppView extends StatelessWidget {
         actions: [
           PopupMenuButton(
             itemBuilder: (context) => <PopupMenuEntry>[
-              popupMenuItemWithIcon(value: 0, icon: Icons.clear, text: 'Clear'),
+              popupMenuItemWithIcon(
+                  value: 0,
+                  icon: const Icon(
+                    Icons.clear,
+                    color: Colors.black,
+                  ),
+                  text: 'Clear'),
               const PopupMenuDivider(),
               popupMenuItemWithIcon(
-                  value: 1, icon: Icons.output, text: 'Export'),
+                  value: 1,
+                  icon: const Icon(
+                    Icons.output,
+                    color: Colors.black,
+                  ),
+                  text: 'Export'),
               const PopupMenuDivider(),
               popupMenuItemWithIcon(
-                  value: 2, icon: Icons.input, text: 'Import'),
+                  value: 2,
+                  icon: const Icon(
+                    Icons.input,
+                    color: Colors.black,
+                  ),
+                  text: 'Import'),
             ],
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

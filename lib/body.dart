@@ -37,6 +37,8 @@ class GraphCanvaState extends State<GraphCanva> {
   int startingAngle = 0;
   ArcDir editArcDir = ArcDir.undecided;
 
+  bool showGrid = true;
+
   @override
   Widget build(BuildContext context) {
     final doCanva = Container(
@@ -48,7 +50,8 @@ class GraphCanvaState extends State<GraphCanva> {
             height: 2000,
             color: Colors.grey[400],
             child: CustomPaint(
-                painter: Painter(drawList: drawList, editIdx: editIdx),
+                painter: Painter(
+                    showGrid: showGrid, drawList: drawList, editIdx: editIdx),
                 child: Container(
                     alignment: Alignment.bottomLeft,
                     child: const Text(
@@ -193,10 +196,21 @@ class GraphCanvaState extends State<GraphCanva> {
             ),
             trailing: PopupMenuButton(
               itemBuilder: (context) => <PopupMenuEntry>[
-                popupMenuItemWithIcon(value: 0, icon: Icons.copy, text: 'Copy'),
+                popupMenuItemWithIcon(
+                    value: 0,
+                    icon: const Icon(
+                      Icons.copy,
+                      color: Colors.black,
+                    ),
+                    text: 'Copy'),
                 const PopupMenuDivider(),
                 popupMenuItemWithIcon(
-                    value: 1, icon: Icons.delete, text: 'Remove'),
+                    value: 1,
+                    icon: const Icon(
+                      Icons.delete,
+                      color: Colors.black,
+                    ),
+                    text: 'Remove'),
               ],
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
@@ -225,7 +239,7 @@ class GraphCanvaState extends State<GraphCanva> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         Container(
-          margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+          margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
           child: ElevatedButton.icon(
               onPressed: () {
                 setState(() {
@@ -235,10 +249,10 @@ class GraphCanvaState extends State<GraphCanva> {
                 });
               },
               icon: const Icon(Icons.draw),
-              label: const Text('Draw Line')),
+              label: const Text('Line')),
         ),
         Container(
-          margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+          margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
           child: ElevatedButton.icon(
               onPressed: () {
                 setState(() {
@@ -248,8 +262,18 @@ class GraphCanvaState extends State<GraphCanva> {
                 });
               },
               icon: const Icon(Icons.draw),
-              label: const Text('Draw Arc')),
+              label: const Text('Arc')),
         ),
+        Expanded(
+            child: SwitchListTile(
+          value: showGrid,
+          onChanged: (value) {
+            setState(() {
+              showGrid = value;
+            });
+          },
+          title: const Text('Show Grid'),
+        ))
       ],
     );
 
@@ -399,15 +423,12 @@ class GraphCanvaState extends State<GraphCanva> {
 }
 
 PopupMenuItem popupMenuItemWithIcon(
-    {required value, required IconData icon, required String text}) {
+    {required value, required Icon icon, required String text}) {
   return PopupMenuItem(
       value: value,
       child: Row(
         children: <Widget>[
-          Icon(
-            icon,
-            color: Colors.black,
-          ),
+          icon,
           const SizedBox(
             width: 5,
           ),
