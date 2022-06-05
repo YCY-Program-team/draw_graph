@@ -40,7 +40,7 @@ class GraphCanvaState extends State<GraphCanva> {
   @override
   Widget build(BuildContext context) {
     final doCanva = Container(
-      margin: const EdgeInsets.all(20),
+      margin: const EdgeInsets.all(10),
       child: FittedBox(
         child: GestureDetector(
           child: Container(
@@ -225,7 +225,7 @@ class GraphCanvaState extends State<GraphCanva> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         Container(
-          margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+          margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
           child: ElevatedButton.icon(
               onPressed: () {
                 setState(() {
@@ -253,11 +253,30 @@ class GraphCanvaState extends State<GraphCanva> {
       ],
     );
 
+    final deviceSize = MediaQuery.of(context).size;
+
     final verticalLayout = Column(
       children: <Widget>[
         drawButtons,
-        Expanded(flex: 3, child: doCanva),
-        Expanded(flex: 2, child: doList)
+        Expanded(
+          flex: 3,
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+            child: Card(
+              color: Colors.lightBlue[100],
+              child: FractionallySizedBox(
+                widthFactor: 1.0,
+                child: doCanva,
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+            flex: 2,
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+              child: Card(color: Colors.lightBlue[100], child: doList),
+            ))
       ],
     );
 
@@ -266,7 +285,12 @@ class GraphCanvaState extends State<GraphCanva> {
         Expanded(
             child: Container(
           margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
-          child: Card(color: Colors.lightBlue[100], child: doCanva),
+          child: Card(
+              color: Colors.lightBlue[100],
+              child: FractionallySizedBox(
+                heightFactor: 1.0,
+                child: doCanva,
+              )),
         )),
         Expanded(
           child: Container(
@@ -284,7 +308,6 @@ class GraphCanvaState extends State<GraphCanva> {
       ],
     );
 
-    final deviceSize = MediaQuery.of(context).size;
     return deviceSize.height > deviceSize.width
         ? verticalLayout
         : horizontalLayout;

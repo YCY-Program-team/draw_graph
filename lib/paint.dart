@@ -86,7 +86,7 @@ class Painter extends CustomPainter {
   void prepare(Canvas canvas, Size size) {
     Paint paint = Paint()
       ..strokeWidth = 10
-      ..color = Colors.lightBlue;
+      ..color = Colors.blue;
     for (int x = 1; x < 20; x++) {
       canvas.drawLine(Offset(size.width * x / 20, size.height * 0),
           Offset(size.width * x / 20, size.height * 1), paint);
