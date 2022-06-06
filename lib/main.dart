@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'package:draw_graph/paint.dart';
 import 'package:flutter/material.dart';
 import 'package:draw_graph/body.dart';
-import 'package:draw_graph/paint.dart';
+import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:draw_graph/qrcode_scan.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const App());
@@ -98,6 +100,8 @@ class AppView extends StatelessWidget {
                   onPressed: () => Navigator.of(context).pop(false),
                   child: const Text('Cancel'))
             ],
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           );
         }).then((value) {
       if (value) {
@@ -106,108 +110,210 @@ class AppView extends StatelessWidget {
     });
   }
 
-  void export(context, GraphCanva body) {
-    showModalBottomSheet(
-        context: context,
-        builder: (BuildContext context) {
-          return Container(
-              height: 500,
-              color: Colors.yellow[100],
-              alignment: Alignment.center,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-              child: Column(
-                children: <Widget>[
-                  Expanded(
-                    child: QrImage(
-                      data: body.exportData(),
-                      version: QrVersions.auto,
-                      embeddedImage: const AssetImage('assets/icon.png'),
-                      embeddedImageStyle:
-                          QrEmbeddedImageStyle(size: const Size(40, 40)),
-                      errorStateBuilder: (cxt, err) {
-                        return const Text('QR code error');
-                      },
-                    ),
-                  ),
-                  ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Close'))
-                ],
-              ));
-        });
+  final severUrl =
+      'https://script.google.com/macros/s/AKfycbyZ_XuuloTczoq_glRZuzYbFhMBxSXKnwOp3PQzZTE5AURGDF1lzzCy3Y0gTbmwBKL1nA/exec';
+
+  Future<String> _createCode(String data) async {
+    var res = await http.get(Uri.parse('$severUrl?action=csc&data=$data'));
+    return jsonDecode(res.body)['code'];
   }
 
-  Future importCheck(context, GraphCanva body) async {
-    if (body.drawList().isNotEmpty) {
-      return await showDialog<bool>(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Import Graph'),
-              content: const Text(
-                  'After importing, all current graph will be cleared.'),
-              actions: [
-                TextButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    child: const Text(
-                      'Import and Clear',
-                      style: TextStyle(color: Colors.red),
-                    )),
-                TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: const Text('Cancel'))
-              ],
-            );
-          });
-    } else {
-      return true;
-    }
+  void export(context, GraphCanva body) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return FutureBuilder(
+              future: _createCode(body.exportData()),
+              builder: ((context, snapshot) {
+                Widget content;
+                if (snapshot.hasData) {
+                  content = Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      SizedBox(
+                        width: 250,
+                        height: 250,
+                        child: QrImage(
+                          data: snapshot.data.toString(),
+                          version: QrVersions.auto,
+                          embeddedImage: const AssetImage('assets/icon.png'),
+                          embeddedImageStyle:
+                              QrEmbeddedImageStyle(size: const Size(40, 40)),
+                          errorStateBuilder: (cxt, err) {
+                            return const Text('QR code error');
+                          },
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Text(
+                          'Export code: "${snapshot.data}", will expire in 24 hours.')
+                    ],
+                  );
+                } else if (snapshot.hasError) {
+                  content = Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const <Widget>[
+                      Icon(
+                        Icons.error_outline,
+                        color: Colors.red,
+                        size: 60,
+                      ),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Text(
+                          'Error setting up code, please make sure you are connected to the Internet.')
+                    ],
+                  );
+                } else {
+                  content = Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const <Widget>[
+                      SizedBox(
+                        width: 60,
+                        height: 60,
+                        child: CircularProgressIndicator(),
+                      ),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Text('Loading...')
+                    ],
+                  );
+                }
+                return AlertDialog(
+                  title: const Text('Export Graph'),
+                  content: SizedBox(
+                    height: 300,
+                    width: 300,
+                    child: content,
+                  ),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Close'))
+                  ],
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                );
+              }));
+        });
   }
 
   void import(context, GraphCanva body) {
-    importCheck(context, body).then((value) {
-      if (value == true) {
-        Navigator.of(context)
-            .push(
-          MaterialPageRoute(
-            builder: (context) => const QRcodeScannerWithController(),
-          ),
-        )
-            .then((value) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          String inputData = '';
+          return AlertDialog(
+            title: const Text('Import Graph'),
+            content: FractionallySizedBox(
+              widthFactor: 1,
+              child: SizedBox(
+                height: 120,
+                child: Column(
+                  children: <Widget>[
+                    const Text(
+                      'Note: The current graph will be cleared after importing.',
+                      style: TextStyle(fontSize: 20, color: Colors.red),
+                    ),
+                    TextField(
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp('[0-9]'))
+                      ],
+                      maxLength: 6,
+                      style: const TextStyle(fontSize: 20),
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                          counterText: '',
+                          labelText: 'Sharing code',
+                          hintText: 'xxxxxx'),
+                      onChanged: (value) => inputData = value,
+                    )
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(inputData),
+                  child: const Text(
+                    'Import',
+                  )),
+              TextButton(
+                  onPressed: () => {
+                        Navigator.of(context)
+                            .push(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const QRcodeScannerWithController(),
+                              ),
+                            )
+                            .then((scanData) =>
+                                Navigator.of(context).pop(scanData))
+                      },
+                  child: const Text(
+                    'Scan QR Code',
+                  )),
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(''),
+                  child: const Text('Cancel'))
+            ],
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          );
+        }).then(
+      (value) {
+        if (value.runtimeType == String && value.toString().length == 6) {
           try {
-            Map scanData = jsonDecode(value);
-            List drawListData = scanData['data'];
-            List<Draw> drawList = [];
-            for (var element in drawListData) {
-              switch (element['type']) {
-                case 'line':
-                  Map data = element['data'];
-                  drawList.add(Draw(type: DrawType.line)
-                    ..line = Line(data['x1'].toDouble(), data['y1'].toDouble(),
-                        data['x2'].toDouble(), data['y2'].toDouble()));
-                  break;
-                case 'arc':
-                  Map data = element['data'];
-                  drawList.add(Draw(type: DrawType.arc)
-                    ..arc = Arc(
-                        data['x'].toDouble(),
-                        data['y'].toDouble(),
-                        data['radius'].toDouble(),
-                        data['angle1'],
-                        data['angle2']));
-                  break;
+            http.get(Uri.parse('$severUrl?action=gsd&code=$value')).then((res) {
+              var importData = jsonDecode(res.body)['data'];
+              if (importData != 'error') {
+                List drawListData = importData['data'];
+                List<Draw> drawList = [];
+                for (var element in drawListData) {
+                  switch (element['type']) {
+                    case 'line':
+                      Map data = element['data'];
+                      drawList.add(Draw(type: DrawType.line)
+                        ..line = Line(
+                            data['x1'].toDouble(),
+                            data['y1'].toDouble(),
+                            data['x2'].toDouble(),
+                            data['y2'].toDouble()));
+                      break;
+                    case 'arc':
+                      Map data = element['data'];
+                      drawList.add(Draw(type: DrawType.arc)
+                        ..arc = Arc(
+                            data['x'].toDouble(),
+                            data['y'].toDouble(),
+                            data['radius'].toDouble(),
+                            data['angle1'],
+                            data['angle2']));
+                      break;
+                  }
+                }
+                body.importData(drawList);
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Import successful!')));
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Invalid code.')));
               }
-            }
-            body.importData(drawList);
-            ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Import successful!')));
+            }).onError((error, stackTrace) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                  content: Text(
+                      'Error getting graph data, please make sure the network is connected.')));
+            });
           } catch (error) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text(
-                    'Import failed. Please check if this QR code is provided by this APP.')));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(const SnackBar(content: Text('Import failed.')));
           }
-        });
-      }
-    });
+        }
+      },
+    );
   }
 }

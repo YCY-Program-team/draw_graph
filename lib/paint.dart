@@ -23,7 +23,7 @@ class Painter extends CustomPainter {
     Paint paintPoint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 20
+      ..strokeWidth = 30
       ..strokeCap = StrokeCap.round;
     //paint editting
     Paint paintEditLine = Paint()
