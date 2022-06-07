@@ -110,12 +110,17 @@ class AppView extends StatelessWidget {
     });
   }
 
-  final severUrl =
-      'https://script.google.com/macros/s/AKfycbyZ_XuuloTczoq_glRZuzYbFhMBxSXKnwOp3PQzZTE5AURGDF1lzzCy3Y0gTbmwBKL1nA/exec';
+  final serverUrl =
+      'https://script.google.com/macros/s/AKfycbxyRPmjUKUk0rIzttjfikrGxWWiKHGuiA1WM5xxkRkZ6Tdxe4icABaIT6oI4b1FNjnwPw/exec';
 
-  Future<String> _createCode(String data) async {
-    var res = await http.get(Uri.parse('$severUrl?action=csc&data=$data'));
-    return jsonDecode(res.body)['code'];
+  Future<String> _createCode(String data, List<Draw> drawList) async {
+    if (drawList.isNotEmpty) {
+      var res = await http
+          .post(Uri.parse(serverUrl), body: {'action': 'csc', 'data': data});
+      return jsonDecode(res.body)['code'];
+    } else {
+      return '';
+    }
   }
 
   void export(context, GraphCanva body) {
@@ -123,34 +128,51 @@ class AppView extends StatelessWidget {
         context: context,
         builder: (BuildContext context) {
           return FutureBuilder(
-              future: _createCode(body.exportData()),
+              future: _createCode(body.exportData(), body.drawList()),
               builder: ((context, snapshot) {
                 Widget content;
                 if (snapshot.hasData) {
-                  content = Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      SizedBox(
-                        width: 250,
-                        height: 250,
-                        child: QrImage(
-                          data: snapshot.data.toString(),
-                          version: QrVersions.auto,
-                          embeddedImage: const AssetImage('assets/icon.png'),
-                          embeddedImageStyle:
-                              QrEmbeddedImageStyle(size: const Size(40, 40)),
-                          errorStateBuilder: (cxt, err) {
-                            return const Text('QR code error');
-                          },
+                  if (snapshot.data != '') {
+                    content = Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        SizedBox(
+                          width: 250,
+                          height: 250,
+                          child: QrImage(
+                            data: snapshot.data.toString(),
+                            version: QrVersions.auto,
+                            embeddedImage: const AssetImage('assets/icon.png'),
+                            embeddedImageStyle:
+                                QrEmbeddedImageStyle(size: const Size(40, 40)),
+                            errorStateBuilder: (cxt, err) {
+                              return const Text('QR code error');
+                            },
+                          ),
                         ),
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Text(
-                          'Export code: "${snapshot.data}", will expire in 24 hours.')
-                    ],
-                  );
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Text(
+                            'Export code: "${snapshot.data}", will expire in 24 hours.')
+                      ],
+                    );
+                  } else {
+                    content = Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const <Widget>[
+                        Icon(
+                          Icons.data_array,
+                          color: Colors.red,
+                          size: 60,
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Text('There are no graph to export.')
+                      ],
+                    );
+                  }
                 } else if (snapshot.hasError) {
                   content = Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -268,7 +290,8 @@ class AppView extends StatelessWidget {
       (value) {
         if (value.runtimeType == String && value.toString().length == 6) {
           try {
-            http.get(Uri.parse('$severUrl?action=gsd&code=$value')).then((res) {
+            http.post(Uri.parse(serverUrl),
+                body: {'action': 'gsd', 'code': value}).then((res) {
               var importData = jsonDecode(res.body)['data'];
               if (importData != 'error') {
                 List drawListData = importData['data'];

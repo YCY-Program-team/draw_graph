@@ -154,7 +154,7 @@ class GraphCanvaState extends State<GraphCanva> {
                     });
                   } else if (editArcDir == ArcDir.counterclockwise) {
                     int drawingAngle =
-                        -((startingAngle + 360 - endingAngle) % 360);
+                        -1 - ((startingAngle + 360 - endingAngle) % 360);
                     setState(() {
                       drawList[editIdx].arc = Arc(arc.x, arc.y, arc.radius,
                           startingAngle, drawingAngle);
