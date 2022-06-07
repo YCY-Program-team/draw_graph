@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:draw_graph/qrcode_scan.dart';
 import 'package:http/http.dart' as http;
+import 'package:share_plus/share_plus.dart';
 
 void main() {
   runApp(const App());
@@ -111,13 +112,20 @@ class AppView extends StatelessWidget {
   }
 
   final serverUrl =
-      'https://script.google.com/macros/s/AKfycbxyRPmjUKUk0rIzttjfikrGxWWiKHGuiA1WM5xxkRkZ6Tdxe4icABaIT6oI4b1FNjnwPw/exec';
+      'https://script.google.com/macros/s/AKfycbx0G_ctlzdOszJGKuBsvNN9HzIhdZilZ_j2O7BSNx17SZsbzpNJdchnxZYVg4pg7kUyjg/exec';
 
-  Future<String> _createCode(String data, List<Draw> drawList) async {
+  Future<String> getExportCode(String data, List<Draw> drawList) async {
     if (drawList.isNotEmpty) {
-      var res = await http
-          .post(Uri.parse(serverUrl), body: {'action': 'csc', 'data': data});
-      return jsonDecode(res.body)['code'];
+      final keyRes = await http.get(Uri.parse('$serverUrl?action=getKey'));
+      await http.post(Uri.parse(serverUrl), body: {
+        'action': 'setData',
+        'key': jsonDecode(keyRes.body)['key'],
+        'data': data
+      });
+
+      final codeRes = await http.get(Uri.parse(
+          '$serverUrl?action=getCode&key=${jsonDecode(keyRes.body)['key']}'));
+      return jsonDecode(codeRes.body)['code'];
     } else {
       return '';
     }
@@ -128,10 +136,10 @@ class AppView extends StatelessWidget {
         context: context,
         builder: (BuildContext context) {
           return FutureBuilder(
-              future: _createCode(body.exportData(), body.drawList()),
+              future: getExportCode(body.exportData(), body.drawList()),
               builder: ((context, snapshot) {
                 Widget content;
-                if (snapshot.hasData) {
+                if (snapshot.hasData && snapshot.data != 'error') {
                   if (snapshot.data != '') {
                     content = Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -173,7 +181,7 @@ class AppView extends StatelessWidget {
                       ],
                     );
                   }
-                } else if (snapshot.hasError) {
+                } else if (snapshot.hasError || snapshot.data == 'error') {
                   content = Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: const <Widget>[
@@ -213,6 +221,18 @@ class AppView extends StatelessWidget {
                     child: content,
                   ),
                   actions: [
+                    TextButton(
+                      onPressed: (snapshot.hasData &&
+                              snapshot.data != 'error' &&
+                              snapshot.data != '')
+                          ? () {
+                              Share.share(
+                                  'Open the link below and enter ${snapshot.data} to import the graphics. (This code expires 24 hours after being generated)\nhttps://drawgraph.netlify.app/',
+                                  subject: 'My Graph');
+                            }
+                          : null,
+                      child: const Text('Share Code'),
+                    ),
                     TextButton(
                         onPressed: () => Navigator.of(context).pop(),
                         child: const Text('Close'))
@@ -287,56 +307,54 @@ class AppView extends StatelessWidget {
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           );
         }).then(
-      (value) {
-        if (value.runtimeType == String && value.toString().length == 6) {
-          try {
-            http.post(Uri.parse(serverUrl),
-                body: {'action': 'gsd', 'code': value}).then((res) {
-              var importData = jsonDecode(res.body)['data'];
-              if (importData != 'error') {
-                List drawListData = importData['data'];
-                List<Draw> drawList = [];
-                for (var element in drawListData) {
-                  switch (element['type']) {
-                    case 'line':
-                      Map data = element['data'];
-                      drawList.add(Draw(type: DrawType.line)
-                        ..line = Line(
-                            data['x1'].toDouble(),
-                            data['y1'].toDouble(),
-                            data['x2'].toDouble(),
-                            data['y2'].toDouble()));
-                      break;
-                    case 'arc':
-                      Map data = element['data'];
-                      drawList.add(Draw(type: DrawType.arc)
-                        ..arc = Arc(
-                            data['x'].toDouble(),
-                            data['y'].toDouble(),
-                            data['radius'].toDouble(),
-                            data['angle1'],
-                            data['angle2']));
-                      break;
-                  }
-                }
-                body.importData(drawList);
-                ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Import successful!')));
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Invalid code.')));
-              }
-            }).onError((error, stackTrace) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                  content: Text(
-                      'Error getting graph data, please make sure the network is connected.')));
-            });
-          } catch (error) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(const SnackBar(content: Text('Import failed.')));
-          }
-        }
-      },
+      (value) => getImportData(value, context, body),
     );
+  }
+
+  void getImportData(code, context, GraphCanva body) {
+    if (code.runtimeType == String && code.toString().length == 6) {
+      try {
+        http.get(Uri.parse('$serverUrl?action=getData&code=$code')).then((res) {
+          var importData = jsonDecode(res.body)['data'];
+          if (importData != 'error') {
+            List drawListData = importData['data'];
+            List<Draw> drawList = [];
+            for (var element in drawListData) {
+              switch (element['type']) {
+                case 'line':
+                  Map data = element['data'];
+                  drawList.add(Draw(type: DrawType.line)
+                    ..line = Line(data['x1'].toDouble(), data['y1'].toDouble(),
+                        data['x2'].toDouble(), data['y2'].toDouble()));
+                  break;
+                case 'arc':
+                  Map data = element['data'];
+                  drawList.add(Draw(type: DrawType.arc)
+                    ..arc = Arc(
+                        data['x'].toDouble(),
+                        data['y'].toDouble(),
+                        data['radius'].toDouble(),
+                        data['angle1'],
+                        data['angle2']));
+                  break;
+              }
+            }
+            body.importData(drawList);
+            ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Import successful!')));
+          } else {
+            ScaffoldMessenger.of(context)
+                .showSnackBar(const SnackBar(content: Text('Invalid code.')));
+          }
+        }).onError((error, stackTrace) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text(
+                  'Error getting graph data, please make sure the network is connected.')));
+        });
+      } catch (error) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Import failed.')));
+      }
+    }
   }
 }

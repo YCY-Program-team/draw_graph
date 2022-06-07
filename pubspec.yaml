@@ -38,6 +38,7 @@ dependencies:
   mobile_scanner: ^1.1.1
   image_picker: ^0.8.5+3
   http: ^0.13.4
+  share_plus: ^4.0.7
 
 dev_dependencies:
   flutter_test:
