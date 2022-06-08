@@ -49,6 +49,9 @@ class Painter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
     for (int i = 0; i < drawList.length; i++) {
       Draw element = drawList[i];
+      paintLine.color = element.color;
+      paintArc.color = element.color;
+      paintPoint.color = element.color;
       if (element.type == DrawType.line) {
         Line line = element.line;
         funList.add((Canvas canvas, Size size) {
@@ -121,12 +124,13 @@ class Draw {
   late Line line;
   late Arc arc;
   DrawType type;
-  Draw({required this.type});
+  Color color;
+  Draw({required this.type, required this.color});
   Draw copy() {
     if (type == DrawType.line) {
-      return Draw(type: type)..line = line;
+      return Draw(type: type, color: color)..line = line;
     } else {
-      return Draw(type: type)..arc = arc;
+      return Draw(type: type, color: color)..arc = arc;
     }
   }
 }

@@ -8,14 +8,11 @@ class GraphCanva extends StatefulWidget {
 
   const GraphCanva(this._key) : super(key: _key);
 
-  void clear() {
-    _key.currentState?.clearList();
-  }
-
+  void clear() => _key.currentState?._clearList();
   List<Draw> drawList() => _key.currentState!.drawList;
-  String exportData() => _key.currentState!.exportGraph();
+  String exportData() => _key.currentState!._exportGraph();
   void importData(List<Draw> importDrawList) =>
-      _key.currentState!.importGraph(importDrawList);
+      _key.currentState!._importGraph(importDrawList);
 
   @override
   State<GraphCanva> createState() => GraphCanvaState();
@@ -106,18 +103,18 @@ class GraphCanvaState extends State<GraphCanva> {
                 if (editLinePoint == LinePoint.p1) {
                   setState(() {
                     drawList[editIdx].line =
-                        Line(limitLoc(x), limitLoc(y), line.x2, line.y2);
+                        Line(_limitLoc(x), _limitLoc(y), line.x2, line.y2);
                   });
                 } else if (editLinePoint == LinePoint.p2) {
                   setState(() {
                     drawList[editIdx].line =
-                        Line(line.x1, line.y1, limitLoc(x), limitLoc(y));
+                        Line(line.x1, line.y1, _limitLoc(x), _limitLoc(y));
                   });
                 } else {
-                  if (checkLoc(line.x1 + dx) &&
-                      checkLoc(line.y1 + dy) &&
-                      checkLoc(line.x2 + dx) &&
-                      checkLoc(line.y2 + dy)) {
+                  if (_checkLoc(line.x1 + dx) &&
+                      _checkLoc(line.y1 + dy) &&
+                      _checkLoc(line.x2 + dx) &&
+                      _checkLoc(line.y2 + dy)) {
                     setState(() {
                       drawList[editIdx].line = Line(line.x1 + dx, line.y1 + dy,
                           line.x2 + dx, line.y2 + dy);
@@ -128,7 +125,7 @@ class GraphCanvaState extends State<GraphCanva> {
                 Arc arc = drawList[editIdx].arc;
                 if (editArcPoint == ArcPoint.pC) {
                   setState(() {
-                    drawList[editIdx].arc = Arc(limitLoc(x), limitLoc(y),
+                    drawList[editIdx].arc = Arc(_limitLoc(x), _limitLoc(y),
                         arc.radius, arc.angle1, arc.angle2);
                   });
                 } else if (editArcPoint == ArcPoint.pR) {
@@ -142,7 +139,7 @@ class GraphCanvaState extends State<GraphCanva> {
                       (atan2(x - arc.x, -(y - arc.y)) / pi * 180).round() - 90;
                   if (endingAngle < 0) endingAngle += 360;
                   if (editArcDir == ArcDir.undecided) {
-                    editArcDir = dragDir(x - arc.x, y - arc.y,
+                    editArcDir = _dragDir(x - arc.x, y - arc.y,
                         dragUpdateDetails.delta.dx, dragUpdateDetails.delta.dy);
                   }
                   if (editArcDir == ArcDir.clockwise) {
@@ -252,7 +249,7 @@ class GraphCanvaState extends State<GraphCanva> {
           child: ElevatedButton.icon(
               onPressed: () {
                 setState(() {
-                  drawList.add(Draw(type: DrawType.line)
+                  drawList.add(Draw(type: DrawType.line, color: Colors.white)
                     ..line = Line(500, 1000, 1500, 1000));
                   editIdx = drawList.length - 1;
                 });
@@ -265,7 +262,7 @@ class GraphCanvaState extends State<GraphCanva> {
           child: ElevatedButton.icon(
               onPressed: () {
                 setState(() {
-                  drawList.add(Draw(type: DrawType.arc)
+                  drawList.add(Draw(type: DrawType.arc, color: Colors.white)
                     ..arc = Arc(1000, 1000, 500, 0, 90));
                   editIdx = drawList.length - 1;
                 });
@@ -346,13 +343,13 @@ class GraphCanvaState extends State<GraphCanva> {
         : horizontalLayout;
   }
 
-  void clearList() {
+  void _clearList() {
     setState(() {
       drawList.clear();
     });
   }
 
-  double limitLoc(double i) {
+  double _limitLoc(double i) {
     if (i < 0) {
       return 0;
     } else if (i > 2000) {
@@ -362,9 +359,9 @@ class GraphCanvaState extends State<GraphCanva> {
     }
   }
 
-  bool checkLoc(double i) => i >= 0 && i <= 2000;
+  bool _checkLoc(double i) => i >= 0 && i <= 2000;
 
-  ArcDir dragDir(double x, double y, double moveX, double moveY) {
+  ArcDir _dragDir(double x, double y, double moveX, double moveY) {
     if (x != 0 && y != 0 && moveX != 0 && moveY != 0) {
       if (x >= 0) {
         if (y >= 0) {
@@ -393,7 +390,7 @@ class GraphCanvaState extends State<GraphCanva> {
     }
   }
 
-  String exportGraph() {
+  String _exportGraph() {
     Map<String, dynamic> exportData = {};
     List<Map<String, dynamic>> darwListData = [];
     for (var element in drawList) {
@@ -426,7 +423,7 @@ class GraphCanvaState extends State<GraphCanva> {
     return jsonEncode(exportData);
   }
 
-  void importGraph(List<Draw> importDrawList) {
+  void _importGraph(List<Draw> importDrawList) {
     setState(() {
       drawList = importDrawList;
       editIdx = -1;

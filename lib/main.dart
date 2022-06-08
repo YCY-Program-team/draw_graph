@@ -29,7 +29,7 @@ class AppView extends StatelessWidget {
   const AppView({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    var body = GraphCanva(GlobalKey<GraphCanvaState>());
+    final body = GraphCanva(GlobalKey<GraphCanvaState>());
     return Scaffold(
       appBar: AppBar(
         title: const Text('Draw Graph'),
@@ -66,13 +66,13 @@ class AppView extends StatelessWidget {
             onSelected: (val) {
               switch (val) {
                 case 0:
-                  clear(context, body);
+                  _clear(context, body);
                   break;
                 case 1:
-                  export(context, body);
+                  _export(context, body);
                   break;
                 case 2:
-                  import(context, body);
+                  _import(context, body);
                   break;
               }
             },
@@ -83,7 +83,7 @@ class AppView extends StatelessWidget {
     );
   }
 
-  void clear(context, GraphCanva body) {
+  void _clear(BuildContext context, GraphCanva body) {
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -114,7 +114,7 @@ class AppView extends StatelessWidget {
   final serverUrl =
       'https://script.google.com/macros/s/AKfycbx0G_ctlzdOszJGKuBsvNN9HzIhdZilZ_j2O7BSNx17SZsbzpNJdchnxZYVg4pg7kUyjg/exec';
 
-  Future<String> getExportCode(String data, List<Draw> drawList) async {
+  Future<String> _getExportCode(String data, List<Draw> drawList) async {
     if (drawList.isNotEmpty) {
       final keyRes = await http.get(Uri.parse('$serverUrl?action=getKey'));
       await http.post(Uri.parse(serverUrl), body: {
@@ -131,12 +131,12 @@ class AppView extends StatelessWidget {
     }
   }
 
-  void export(context, GraphCanva body) {
+  void _export(BuildContext context, GraphCanva body) {
     showDialog(
         context: context,
         builder: (BuildContext context) {
           return FutureBuilder(
-              future: getExportCode(body.exportData(), body.drawList()),
+              future: _getExportCode(body.exportData(), body.drawList()),
               builder: ((context, snapshot) {
                 Widget content;
                 if (snapshot.hasData && snapshot.data != 'error') {
@@ -244,7 +244,7 @@ class AppView extends StatelessWidget {
         });
   }
 
-  void import(context, GraphCanva body) {
+  void _import(BuildContext context, GraphCanva body) {
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -307,11 +307,11 @@ class AppView extends StatelessWidget {
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           );
         }).then(
-      (value) => getImportData(value, context, body),
+      (value) => _getImportData(context, body, value),
     );
   }
 
-  void getImportData(code, context, GraphCanva body) {
+  void _getImportData(BuildContext context, GraphCanva body, code) {
     if (code.runtimeType == String && code.toString().length == 6) {
       try {
         http.get(Uri.parse('$serverUrl?action=getData&code=$code')).then((res) {
@@ -323,13 +323,17 @@ class AppView extends StatelessWidget {
               switch (element['type']) {
                 case 'line':
                   Map data = element['data'];
-                  drawList.add(Draw(type: DrawType.line)
-                    ..line = Line(data['x1'].toDouble(), data['y1'].toDouble(),
-                        data['x2'].toDouble(), data['y2'].toDouble()));
+                  drawList.add(
+                      Draw(type: DrawType.line, color: element['color'])
+                        ..line = Line(
+                            data['x1'].toDouble(),
+                            data['y1'].toDouble(),
+                            data['x2'].toDouble(),
+                            data['y2'].toDouble()));
                   break;
                 case 'arc':
                   Map data = element['data'];
-                  drawList.add(Draw(type: DrawType.arc)
+                  drawList.add(Draw(type: DrawType.arc, color: element['color'])
                     ..arc = Arc(
                         data['x'].toDouble(),
                         data['y'].toDouble(),
