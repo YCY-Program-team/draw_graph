@@ -429,6 +429,7 @@ class GraphCanvaState extends State<GraphCanva> {
   void importGraph(List<Draw> importDrawList) {
     setState(() {
       drawList = importDrawList;
+      editIdx = -1;
     });
   }
 }
