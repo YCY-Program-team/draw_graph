@@ -9,49 +9,47 @@ class Painter extends CustomPainter {
   bool showGrid;
   Painter(
       {required this.showGrid, required this.drawList, required this.editIdx}) {
-    //paint
-    Paint paintLine = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 10
-      ..strokeCap = StrokeCap.round;
-    Paint paintArc = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 10
-      ..strokeCap = StrokeCap.round;
-    Paint paintPoint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 30
-      ..strokeCap = StrokeCap.round;
-    //paint editting
-    Paint paintEditLine = Paint()
-      ..color = Colors.yellow
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 10
-      ..strokeCap = StrokeCap.round;
-    Paint paintEditArc = Paint()
-      ..color = Colors.yellow
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 10
-      ..strokeCap = StrokeCap.round;
-    Paint paintEditPoint = Paint()
-      ..color = Colors.yellow
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 50
-      ..strokeCap = StrokeCap.round;
-    //paint compass
-    Paint paintCompass = Paint()
-      ..color = const Color.fromARGB(158, 12, 57, 255)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 10
-      ..strokeCap = StrokeCap.round;
     for (int i = 0; i < drawList.length; i++) {
       Draw element = drawList[i];
-      paintLine.color = element.color;
-      paintArc.color = element.color;
-      paintPoint.color = element.color;
+      //paint
+      Paint paintLine = Paint()
+        ..color = element.color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 10
+        ..strokeCap = StrokeCap.round;
+      Paint paintArc = Paint()
+        ..color = element.color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 10
+        ..strokeCap = StrokeCap.round;
+      Paint paintPoint = Paint()
+        ..color = element.color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 30
+        ..strokeCap = StrokeCap.round;
+      //paint editting
+      Paint paintEditLine = Paint()
+        ..color = Colors.yellow
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 10
+        ..strokeCap = StrokeCap.round;
+      Paint paintEditArc = Paint()
+        ..color = Colors.yellow
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 10
+        ..strokeCap = StrokeCap.round;
+      Paint paintEditPoint = Paint()
+        ..color = Colors.yellow
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 50
+        ..strokeCap = StrokeCap.round;
+      //paint compass
+      Paint paintCompass = Paint()
+        ..color = const Color.fromARGB(158, 12, 57, 255)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 10
+        ..strokeCap = StrokeCap.round;
+
       if (element.type == DrawType.line) {
         Line line = element.line;
         funList.add((Canvas canvas, Size size) {

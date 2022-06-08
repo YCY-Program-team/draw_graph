@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:draw_graph/paint.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 class GraphCanva extends StatefulWidget {
   final GlobalKey<GraphCanvaState> _key;
@@ -199,6 +200,45 @@ class GraphCanvaState extends State<GraphCanva> {
             subtitle: Text(
               subtitle,
               style: const TextStyle(fontSize: 18),
+            ),
+            leading: IconButton(
+              icon: Icon(
+                Icons.color_lens,
+                color: data.color,
+              ),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      titlePadding: const EdgeInsets.all(0),
+                      contentPadding: const EdgeInsets.all(0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: MediaQuery.of(context).orientation ==
+                                Orientation.portrait
+                            ? const BorderRadius.vertical(
+                                top: Radius.circular(500),
+                                bottom: Radius.circular(100),
+                              )
+                            : const BorderRadius.horizontal(
+                                right: Radius.circular(500)),
+                      ),
+                      content: SingleChildScrollView(
+                        child: HueRingPicker(
+                          pickerColor: data.color,
+                          onColorChanged: (color) {
+                            setState(() {
+                              data.color = color;
+                            });
+                          },
+                          enableAlpha: true,
+                          displayThumbColor: true,
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
             ),
             trailing: PopupMenuButton(
               itemBuilder: (context) => <PopupMenuEntry>[
@@ -398,6 +438,12 @@ class GraphCanvaState extends State<GraphCanva> {
         Line line = element.line;
         darwListData.add({
           'type': 'line',
+          'color': {
+            'a': element.color.alpha,
+            'r': element.color.red,
+            'g': element.color.green,
+            'b': element.color.blue
+          },
           'data': {
             'x1': line.x1.round(),
             'y1': line.y1.round(),
@@ -409,6 +455,12 @@ class GraphCanvaState extends State<GraphCanva> {
         Arc arc = element.arc;
         darwListData.add({
           'type': 'arc',
+          'color': {
+            'a': element.color.alpha,
+            'r': element.color.red,
+            'g': element.color.green,
+            'b': element.color.blue,
+          },
           'data': {
             'x': arc.x.round(),
             'y': arc.y.round(),

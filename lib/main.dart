@@ -320,20 +320,23 @@ class AppView extends StatelessWidget {
             List drawListData = importData['data'];
             List<Draw> drawList = [];
             for (var element in drawListData) {
+              Map<String, dynamic> color = element['color'];
               switch (element['type']) {
                 case 'line':
                   Map data = element['data'];
-                  drawList.add(
-                      Draw(type: DrawType.line, color: element['color'])
-                        ..line = Line(
-                            data['x1'].toDouble(),
-                            data['y1'].toDouble(),
-                            data['x2'].toDouble(),
-                            data['y2'].toDouble()));
+                  drawList.add(Draw(
+                      type: DrawType.line,
+                      color: Color.fromARGB(
+                          color['a'], color['r'], color['g'], color['b']))
+                    ..line = Line(data['x1'].toDouble(), data['y1'].toDouble(),
+                        data['x2'].toDouble(), data['y2'].toDouble()));
                   break;
                 case 'arc':
                   Map data = element['data'];
-                  drawList.add(Draw(type: DrawType.arc, color: element['color'])
+                  drawList.add(Draw(
+                      type: DrawType.arc,
+                      color: Color.fromARGB(
+                          color['a'], color['r'], color['g'], color['b']))
                     ..arc = Arc(
                         data['x'].toDouble(),
                         data['y'].toDouble(),
