@@ -59,6 +59,14 @@ class AppView extends StatelessWidget {
                     color: Colors.black,
                   ),
                   text: 'Import'),
+              const PopupMenuDivider(),
+              popupMenuItemWithIcon(
+                  value: 3,
+                  icon: const Icon(
+                    Icons.info_outline,
+                    color: Colors.black,
+                  ),
+                  text: 'License'),
             ],
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -73,6 +81,9 @@ class AppView extends StatelessWidget {
                   break;
                 case 2:
                   _import(context, body);
+                  break;
+                case 3:
+                  _showLicense(context);
                   break;
               }
             },
@@ -150,7 +161,7 @@ class AppView extends StatelessWidget {
                           child: QrImage(
                             data: snapshot.data.toString(),
                             version: QrVersions.auto,
-                            embeddedImage: const AssetImage('assets/icon.png'),
+                            embeddedImage: const AssetImage('assets/logo.png'),
                             embeddedImageStyle:
                                 QrEmbeddedImageStyle(size: const Size(40, 40)),
                             errorStateBuilder: (cxt, err) {
@@ -363,5 +374,25 @@ class AppView extends StatelessWidget {
             .showSnackBar(const SnackBar(content: Text('Import failed.')));
       }
     }
+  }
+
+  void _showLicense(BuildContext context) {
+    showLicensePage(
+      context: context,
+      applicationName: 'Draw Graph',
+      applicationIcon: Padding(
+        padding: const EdgeInsets.all(10),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Image.asset(
+            'assets/icon.png',
+            width: 150,
+            height: 150,
+          ),
+        ),
+      ),
+      applicationVersion: 'V1.0',
+      applicationLegalese: '©️ ${DateTime.now().year} YCY Program',
+    );
   }
 }
