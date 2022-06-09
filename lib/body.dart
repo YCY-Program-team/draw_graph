@@ -2,7 +2,7 @@ import 'dart:math';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:draw_graph/paint.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:flex_color_picker/flex_color_picker.dart';
 
 class GraphCanva extends StatefulWidget {
   final GlobalKey<GraphCanvaState> _key;
@@ -207,36 +207,50 @@ class GraphCanvaState extends State<GraphCanva> {
                 color: data.color,
               ),
               onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      titlePadding: const EdgeInsets.all(0),
-                      contentPadding: const EdgeInsets.all(0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: MediaQuery.of(context).orientation ==
-                                Orientation.portrait
-                            ? const BorderRadius.vertical(
-                                top: Radius.circular(500),
-                                bottom: Radius.circular(100),
-                              )
-                            : const BorderRadius.horizontal(
-                                right: Radius.circular(500)),
-                      ),
-                      content: SingleChildScrollView(
-                        child: HueRingPicker(
-                          pickerColor: data.color,
-                          onColorChanged: (color) {
-                            setState(() {
-                              data.color = color;
-                            });
-                          },
-                          enableAlpha: true,
-                          displayThumbColor: true,
-                        ),
-                      ),
-                    );
+                ColorPicker(
+                  color: data.color,
+                  onColorChanged: (Color color) =>
+                      setState(() => data.color = color),
+                  width: 40,
+                  height: 40,
+                  borderRadius: 4,
+                  spacing: 5,
+                  runSpacing: 5,
+                  wheelDiameter: 155,
+                  heading: Text(
+                    'Select color',
+                    style: Theme.of(context).textTheme.subtitle1,
+                  ),
+                  subheading: Text(
+                    'Select color shade',
+                    style: Theme.of(context).textTheme.subtitle1,
+                  ),
+                  wheelSubheading: Text(
+                    'Selected color and its shades',
+                    style: Theme.of(context).textTheme.subtitle1,
+                  ),
+                  showMaterialName: true,
+                  showColorName: true,
+                  showColorCode: true,
+                  copyPasteBehavior: const ColorPickerCopyPasteBehavior(
+                    longPressMenu: true,
+                  ),
+                  enableOpacity: true,
+                  materialNameTextStyle: Theme.of(context).textTheme.caption,
+                  colorNameTextStyle: Theme.of(context).textTheme.caption,
+                  colorCodeTextStyle: Theme.of(context).textTheme.bodyText2,
+                  colorCodePrefixStyle: Theme.of(context).textTheme.caption,
+                  selectedPickerTypeColor:
+                      Theme.of(context).colorScheme.primary,
+                  pickersEnabled: const <ColorPickerType, bool>{
+                    ColorPickerType.primary: true,
+                    ColorPickerType.accent: true,
+                    ColorPickerType.wheel: true,
                   },
+                ).showPickerDialog(
+                  context,
+                  constraints: const BoxConstraints(
+                      minHeight: 480, minWidth: 300, maxWidth: 320),
                 );
               },
             ),
