@@ -2,7 +2,9 @@ import 'dart:math';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:draw_graph/paint.dart';
-import 'package:flex_color_picker/flex_color_picker.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:draw_graph/color_picker.dart';
+import 'package:community_material_icon/community_material_icon.dart';
 
 class GraphCanva extends StatefulWidget {
   final GlobalKey<GraphCanvaState> _key;
@@ -207,50 +209,27 @@ class GraphCanvaState extends State<GraphCanva> {
                 color: data.color,
               ),
               onPressed: () {
-                ColorPicker(
-                  color: data.color,
-                  onColorChanged: (Color color) =>
-                      setState(() => data.color = color),
-                  width: 40,
-                  height: 40,
-                  borderRadius: 4,
-                  spacing: 5,
-                  runSpacing: 5,
-                  wheelDiameter: 155,
-                  heading: Text(
-                    'Select color',
-                    style: Theme.of(context).textTheme.subtitle1,
-                  ),
-                  subheading: Text(
-                    'Select color shade',
-                    style: Theme.of(context).textTheme.subtitle1,
-                  ),
-                  wheelSubheading: Text(
-                    'Selected color and its shades',
-                    style: Theme.of(context).textTheme.subtitle1,
-                  ),
-                  showMaterialName: true,
-                  showColorName: true,
-                  showColorCode: true,
-                  copyPasteBehavior: const ColorPickerCopyPasteBehavior(
-                    longPressMenu: true,
-                  ),
-                  enableOpacity: true,
-                  materialNameTextStyle: Theme.of(context).textTheme.caption,
-                  colorNameTextStyle: Theme.of(context).textTheme.caption,
-                  colorCodeTextStyle: Theme.of(context).textTheme.bodyText2,
-                  colorCodePrefixStyle: Theme.of(context).textTheme.caption,
-                  selectedPickerTypeColor:
-                      Theme.of(context).colorScheme.primary,
-                  pickersEnabled: const <ColorPickerType, bool>{
-                    ColorPickerType.primary: true,
-                    ColorPickerType.accent: true,
-                    ColorPickerType.wheel: true,
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      backgroundColor: Colors.grey[400],
+                      title: const Text('Select a color'),
+                      content: SingleChildScrollView(
+                        child: BlockPicker(
+                          pickerColor: data.color,
+                          onColorChanged: (Color color) {
+                            setState(() {
+                              data.color = color;
+                            });
+                          },
+                          availableColors: colors,
+                          layoutBuilder: pickerLayoutBuilder,
+                          itemBuilder: pickerItemBuilder,
+                        ),
+                      ),
+                    );
                   },
-                ).showPickerDialog(
-                  context,
-                  constraints: const BoxConstraints(
-                      minHeight: 480, minWidth: 300, maxWidth: 320),
                 );
               },
             ),
@@ -300,29 +279,29 @@ class GraphCanvaState extends State<GraphCanva> {
       children: <Widget>[
         Container(
           margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-          child: ElevatedButton.icon(
-              onPressed: () {
-                setState(() {
-                  drawList.add(Draw(type: DrawType.line, color: Colors.white)
-                    ..line = Line(500, 1000, 1500, 1000));
-                  editIdx = drawList.length - 1;
-                });
-              },
-              icon: const Icon(Icons.draw),
-              label: const Text('Line')),
+          child: IconButton(
+            icon: const Icon(CommunityMaterialIcons.vector_line),
+            onPressed: () {
+              setState(() {
+                drawList.add(Draw(type: DrawType.line, color: Colors.white)
+                  ..line = Line(500, 1000, 1500, 1000));
+                editIdx = drawList.length - 1;
+              });
+            },
+          ),
         ),
         Container(
           margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-          child: ElevatedButton.icon(
-              onPressed: () {
-                setState(() {
-                  drawList.add(Draw(type: DrawType.arc, color: Colors.white)
-                    ..arc = Arc(1000, 1000, 500, 0, 90));
-                  editIdx = drawList.length - 1;
-                });
-              },
-              icon: const Icon(Icons.draw),
-              label: const Text('Arc')),
+          child: IconButton(
+            icon: const Icon(CommunityMaterialIcons.vector_circle),
+            onPressed: () {
+              setState(() {
+                drawList.add(Draw(type: DrawType.arc, color: Colors.white)
+                  ..arc = Arc(1000, 1000, 500, 0, 90));
+                editIdx = drawList.length - 1;
+              });
+            },
+          ),
         ),
         Expanded(
             child: SwitchListTile(
